@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 bot = telebot.TeleBot(os.environ["TELEGRAM_TOKEN"])
 
 
-@app.route("/maps_hook", methods=["POST"])
+@app.route("/" + WEBHOOK_URL, methods=["POST"])
 def webhook():
     if flask.request.headers.get("content-type") == "application/json":
         json_string = flask.request.get_data().decode("utf-8")
@@ -59,10 +59,12 @@ def send_welcome(message):
 
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
+    logger.info(f"processing {message.text}")
     file_name = text_to_qr_code(message.text)
     photo_file = open(file_name, "rb")
     bot.send_photo(message.chat.id, photo_file)
     os.remove(file_name)
+    logger.info("cleanup complete")
 
 
 if __name__ == "__main__":
